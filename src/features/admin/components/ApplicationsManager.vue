@@ -301,8 +301,8 @@ watch(() => props.filterCallId, () => { currentPage.value = 1; loadApplications(
               <td class="px-4 py-4 font-mono text-xs text-slate-500">#{{ application.id }}</td>
 
               <td class="px-4 py-4">
-                <div class="font-semibold text-white text-sm">{{ application.applicant_name }}</div>
-                <div class="text-xs text-slate-500 font-mono mt-0.5">{{ application.applicant_email }}</div>
+                <div class="font-semibold text-white text-sm">{{ application.applicant_type == 'team' ? application.team.name : application.student_profile.user.first_name + ' ' + application.student_profile.user.last_name }}</div>
+                <div class="text-xs text-slate-500 font-mono mt-0.5">{{ application.student_profile.user.email }}</div>
               </td>
 
               <td class="px-4 py-4">

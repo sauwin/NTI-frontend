@@ -53,8 +53,9 @@ export interface AdminApplication {
 
 export interface AdminApplicationListItem {
   id: number
-  applicant_name: string
-  applicant_email: string
+  applicant_type: string
+  student_profile: any
+  team: any
   program: string
   program_type: string
   call_name: string

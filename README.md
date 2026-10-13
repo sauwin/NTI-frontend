@@ -90,24 +90,36 @@ FE_NTI/
 └── package.json
 ```
 
-## Getting Started
-
-### Prerequisites
+## Requirements
 
 - Node.js `^20.19.0` or `>=22.12.0`
-- npm
-- The **BE_NTI** backend running on `http://localhost:8000` (see its README)
+- [BE_NTI](https://github.com/sauwin/) running on `http://localhost:8000`
 
-### Setup
+## Setup
 
 ```sh
 git clone https://github.com/your-username/FE_NTI.git
 cd FE_NTI
 npm install
+```
+npm install
+```
+
+Start the development server:
+
+```sh
 npm run dev
 ```
 
 The app is available at `http://localhost:5173`.
+
+The API is expected at:
+
+```text
+http://localhost:8000/api
+```
+
+The API URL is currently configured in `src/shared/api/axios.ts`.
 
 ### Configuration
 
@@ -121,6 +133,20 @@ const api = axios.create({
 ```
 
 Change `baseURL` there if the backend runs elsewhere. The backend must also allow the frontend origin (`CORS_ALLOWED_ORIGINS` and `SANCTUM_STATEFUL_DOMAINS` in the BE `.env`).
+
+### Production build
+
+```sh
+npm run build
+```
+
+The production files are generated in `dist/`.
+
+To preview the build:
+
+```sh
+npm run preview
+```
 
 ### Scripts
 

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { STUDENT } from './helpers'
-import {applyMocks, setAuthState} from './mocks'
+import { applyMocks, setAuthState } from './mocks'
 
 // NOTE: email verification is a backend flow — test confirms redirect to /pending-verification
 // and then simulates the verified state by navigating to /verified directly (dev/test env only)
@@ -28,11 +28,8 @@ test('Scenario 1: student registers, verifies email, fills profile, submits Prog
     await expect(page).toHaveURL('/pending-verification')
 
 // --- Simulate email verification (backend sends link to /verified) ---
-// In real E2E: use mailhog/mailpit API to extract token.
-// Here we navigate directly — requires BE to set session/cookie on GET /verified
     await page.goto('/verified')
     await setAuthState(page, 'student')
-    await page.goto('/dashboard')
 
 // --- Fill student profile ---
     await page.goto('/profile/complete')
@@ -53,26 +50,29 @@ test('Scenario 1: student registers, verifies email, fills profile, submits Prog
 // --- Navigate to Program A form ---
     await page.goto('/programs/a/upload')
 
-// Step 1: pick team and category
+// Step 1: pick team, project title, category, and academic declaration
     const teamSelect = page.locator('select').first()
     await teamSelect.selectOption({ index: 1 })
+
+    await page.locator('input[type="text"]').first().fill('E2E Test Project Title')
 
     const categorySelect = page.locator('select').nth(1)
     await categorySelect.selectOption({ index: 1 })
 
     await page.locator('input[type="checkbox"]').first().check()
 
-    await page.locator('button', { hasText: 'Continue to Documents' }).click()
+    await page.locator('button', { hasText: /Continue|Next/ }).click()
 
 // Step 2: upload at least one required document
     const fileInput = page.locator('input[type="file"]').first()
     await fileInput.setInputFiles({
         name: 'executive_summary.pdf',
         mimeType: 'application/pdf',
-        buffer: Buffer.from('%PDF-1.4 test'),
+        buffer: Buffer.from('%PDF-1.4 test template content data'),
     })
 
     await page.locator('button[type="submit"]').click()
 
-    await expect(page.locator('text=/submitted|success|dashboard/i').first()).toBeVisible({ timeout: 10000 })
+// Step 3: Success page validation
+    await page.waitForSelector('text=🎉', { timeout: 5000 })
 })

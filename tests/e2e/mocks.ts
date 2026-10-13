@@ -67,6 +67,20 @@ const APPLICATION = {
     score: null,
 }
 
+const ROBUST_APPLICATION = {
+    id: 1,
+    status: 'approved', // Must be approved for mentorship assignment visibility eligibility rules
+    applicant_type: 'team',
+    team_id: 1,
+    call_id: 1,
+    call_name: 'Spring Call 2026',
+    program_type: 'a',
+    team: { name: 'E2E Team' },
+    student_profile: {
+        user: { first_name: 'John', last_name: 'Pork', email: 'student@nti.test' }
+    }
+}
+
 const MENTORS = [
     { id: 10, name: 'Mentor One', email: 'mentor@nti.test', role_slug: 'mentor', roles: [{ slug: 'mentor' }] },
 ]
@@ -74,8 +88,14 @@ const MENTORS = [
 const APPLICATIONS_LIST = [
     {
         id: 1,
-        status: 'approved',
+        status: 'submitted', 
+        applicant_type: 'team', 
         team: { name: 'E2E Team' },
+        student_profile: {
+            user: { first_name: 'John', last_name: 'Pork', email: 'student@nti.test' }
+        },
+        call_name: 'Spring Call 2026',
+        program_type: 'a',
         call: { id: 1, program_type: 'a' },
     },
 ]
@@ -114,12 +134,6 @@ function resolveUserByEmail(email: string) {
 export async function applyMocks(page: Page) {
 // auth
     await page.route('**/api/auth/register', r => r.fulfill(ok({ message: 'ok', token: TOKEN, user: COMPANY_USER })))
-
-    await page.route('**/api/auth/login', async r => {
-        const body = JSON.parse(r.request().postData() ?? '{}')
-        const user = resolveUserByEmail(body.email ?? '')
-        r.fulfill(ok({ token: TOKEN, user }))
-    })
 
     await page.route('**/api/auth/logout', r => r.fulfill(ok({ message: 'ok' })))
     let loggedInUser: typeof STUDENT_USER | typeof ADMIN_USER | typeof COMPANY_USER = STUDENT_USER
@@ -167,7 +181,12 @@ export async function applyMocks(page: Page) {
 // applications
     await page.route('**/api/applications', async r => {
         if (r.request().method() === 'POST') return r.fulfill(ok(APPLICATION))
-        return r.fulfill(ok(APPLICATIONS_LIST))
+        return r.fulfill(ok({
+            current_page: 1,
+            last_page: 1,
+            total: 1,
+            data: [ROBUST_APPLICATION]
+        }))
     })
     await page.route('**/api/applications/1', r => r.fulfill(ok(APPLICATION)))
     await page.route('**/api/applications/1/submit', r => r.fulfill(ok({ message: 'submitted' })))
@@ -191,10 +210,21 @@ export async function applyMocks(page: Page) {
 // admin
     await page.route('**/api/admin/reporting/dashboard-stats', r => r.fulfill(ok(DASHBOARD_STATS)))
     await page.route('**/api/admin/applications/1', r => r.fulfill(ok(APPLICATION)))
-    await page.route('**/api/admin/applications*', r => r.fulfill(ok({ data: APPLICATIONS_LIST })))
+
+    await page.route('**/api/admin/applications*', async r => {
+        return r.fulfill(ok({
+            current_page: 1,
+            last_page: 1,
+            total: 1,
+            data: [ROBUST_APPLICATION]
+        }))
+    })
+
     await page.route('**/api/admin/users', r => r.fulfill(ok([STUDENT_USER, COMPANY_USER])))
     await page.route('**/api/admin/admin-users', r => r.fulfill(ok([ADMIN_USER])))
-    await page.route('**/api/admin/mentorships', r => r.fulfill(ok([])))
+    await page.route('**/api/admin/mentorships', r => r.fulfill(ok([
+        { id: 1, application_id: 1, mentor_id: 10 }
+    ])))
     await page.route('**/api/admin/programs', r => r.fulfill(ok([{ id: 1, type: 'a' }, { id: 2, type: 'b' }])))
     await page.route('**/api/admin/calls', r => r.fulfill(ok([ACTIVE_CALL])))
     await page.route('**/api/admin/approvals', r => r.fulfill(ok([])))
@@ -203,7 +233,9 @@ export async function applyMocks(page: Page) {
 
 // mentorships assign
     await page.route('**/api/mentorships/assign', r => r.fulfill(ok({ message: 'assigned', id: 1 })))
-    await page.route('**/api/mentorships', r => r.fulfill(ok([])))
+    await page.route('**/api/mentorships', r => r.fulfill(ok([
+        { id: 1, application_id: 1, mentor_id: 10 }
+    ])))
 
 // users with mentor role for assign dropdown
     await page.route('**/api/admin/users*', r => r.fulfill(ok([STUDENT_USER, { ...MENTORS[0] }])))
