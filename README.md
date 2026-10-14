@@ -247,4 +247,4 @@ Playwright builds the app and starts `npm run preview` on port 5173 automaticall
 
 ## Related Repositories
 
-- **BE_NTI** — Laravel REST API used by this frontend
+- **NTI-backend** — Laravel REST API used by this frontend
